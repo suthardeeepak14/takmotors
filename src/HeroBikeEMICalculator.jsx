@@ -2,11 +2,19 @@ import { useState } from "react";
 
 export default function HeroBikeEMICalculator() {
   const bikes = [
-    { name: "Splendor Plus", price: 89500 },
-    { name: "Passion Pro", price: 90000 },
-    { name: "HF Deluxe", price: 75500 },
-    { name: "Glamour", price: 105000 },
-    { name: "Xtreme 160R", price: 135000 },
+    { name: "DESTINI 125 PRIME", price: 86000 },
+    { name: "HF DLX SELF OBD2B", price: 75500 },
+    { name: "HF DLX SELF BLA OBD2B", price: 76563 },
+    { name: "HF DLX I3S OBD2B", price: 77062 },
+    { name: "HF DLX PRO I3S", price: 80892 },
+    { name: "Splendor + SELF OBD2B", price: 89500 },
+    { name: "Splendor + I3S OBD2B", price: 91000 },
+    { name: "Splendor + I3S BLACK OBD2B", price: 91000 },
+    { name: "Splendor + XTEC OBD2B", price: 93600 },
+    { name: "Splendor + XTEC 2.0 OBD2B", price: 96500 },
+    { name: "Super XTEC DR OBD2B", price: 98000 },
+    { name: "Super XTEC DISC OBD2B", price: 102500 },
+    { name: "Xtreme 125R", price: 114600 },
   ];
 
   const financeCompanies = [
@@ -71,7 +79,7 @@ export default function HeroBikeEMICalculator() {
           loanAmount + loanAmount * annualInterestRate * tenureYears;
         emi = totalPayable / months;
       }
-      results[months] = emi.toFixed(2);
+      results[months] = emi.toFixed(0);
     });
 
     setEmiResults(results);
@@ -136,7 +144,7 @@ export default function HeroBikeEMICalculator() {
 
         {/* Result */}
         {emiResults && (
-          <div className="mt-6 bg-blue-50 p-4 rounded-xl text-center">
+          <div className="mt-6 bg-blue-50 p-4 rounded-xl text-left">
             <p className="text-gray-700">
               <strong>Finance Company:</strong> {financeCompany}
             </p>
@@ -157,8 +165,8 @@ export default function HeroBikeEMICalculator() {
             <table className="w-full text-sm border">
               <thead>
                 <tr className="bg-blue-100">
-                  <th className="p-2 border">Tenure (Months)</th>
-                  <th className="p-2 border">Monthly EMI (₹)</th>
+                  <th className="p-2 border">Tenure</th>
+                  <th className="p-2 border">EMI</th>
                 </tr>
               </thead>
               <tbody>
