@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function HeroBikeEMICalculator() {
   const bikes = [
@@ -23,7 +23,7 @@ export default function HeroBikeEMICalculator() {
     "Namdev Finvest Pvt Ltd.",
   ];
 
-  const [bike, setBike] = useState(bikes[0]);
+  const [bike, setBike] = useState(bikes[5]);
   const [financeCompany, setFinanceCompany] = useState(financeCompanies[0]);
   const [downPayment, setDownPayment] = useState("15000"); // Keep as string for input control
   const [emiResults, setEmiResults] = useState(null);
@@ -87,6 +87,9 @@ export default function HeroBikeEMICalculator() {
 
     setEmiResults(results);
   };
+  // useEffect(() => {
+  //   calculateEMI();
+  // }, [bike, financeCompany, downPayment]);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-gray-100">
