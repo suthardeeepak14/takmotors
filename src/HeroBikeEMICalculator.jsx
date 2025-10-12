@@ -20,28 +20,28 @@ export default function HeroBikeEMICalculator() {
   const financeCompanies = [
     "Amar Padma",
     "Bazaari Global Fincance",
-    "Hero Fincorp",
     "Namdev Finvest Pvt Ltd.",
   ];
 
   const [bike, setBike] = useState(bikes[0]);
   const [financeCompany, setFinanceCompany] = useState(financeCompanies[0]);
-  const [downPayment, setDownPayment] = useState(15000);
+  const [downPayment, setDownPayment] = useState("15000"); // Keep as string for input control
   const [emiResults, setEmiResults] = useState(null);
   const [error, setError] = useState("");
 
   const calculateEMI = () => {
-    if (downPayment < 0 || downPayment >= bike.price) {
+    const dp = Number(downPayment);
+
+    if (dp < 0 || dp >= bike.price) {
       setError("⚠️ Down payment must be less than the bike price.");
       setEmiResults(null);
       return;
     }
 
     setError("");
-    const baseLoan = bike.price - downPayment;
+    const baseLoan = bike.price - dp;
     const results = {};
 
-    // ---- Amar Padma Special Logic (Unchanged) ----
     if (financeCompany === "Amar Padma") {
       const annualInterestRate = 0.13;
       const extraPerEMI = 40;
@@ -53,7 +53,7 @@ export default function HeroBikeEMICalculator() {
         { interest: 36, emi: 35 },
       ];
 
-      const loan = baseLoan + 5000; // Processing Fee
+      const loan = baseLoan + 5000; // Amar Padma processing fee
 
       amarPadmaMapping.forEach(({ interest, emi }) => {
         const monthlyInterest = (loan * annualInterestRate) / 12;
@@ -67,7 +67,7 @@ export default function HeroBikeEMICalculator() {
       return;
     }
 
-    // ---- Other Companies (Flat Interest + ₹5000 Processing) ----
+    // Other Companies (Flat Interest + ₹4,500 Processing)
     const tenures = [12, 18, 24, 30, 36];
     let annualInterestRate = 0.13;
 
@@ -75,7 +75,7 @@ export default function HeroBikeEMICalculator() {
       annualInterestRate = 0.118;
     }
 
-    const loanWithProcessing = baseLoan + 5000;
+    const loanWithProcessing = baseLoan + 4500;
 
     tenures.forEach((months) => {
       const totalInterest =
@@ -124,10 +124,13 @@ export default function HeroBikeEMICalculator() {
         {/* Down Payment */}
         <label className="block mb-2 font-medium">Down Payment (₹)</label>
         <input
-          type="number"
+          type="text"
           className="w-full border rounded-lg p-2 mb-4 outline-none focus:ring-2 focus:ring-blue-500"
           value={downPayment}
-          onChange={(e) => setDownPayment(Number(e.target.value))}
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, ""); // allow only digits
+            setDownPayment(value);
+          }}
         />
 
         {/* Error Message */}
@@ -158,7 +161,8 @@ export default function HeroBikeEMICalculator() {
               <strong>Price:</strong> ₹{bike.price.toLocaleString()}
             </p>
             <p className="text-gray-700">
-              <strong>Down Payment:</strong> ₹{downPayment.toLocaleString()}
+              <strong>Down Payment:</strong> ₹
+              {Number(downPayment).toLocaleString()}
             </p>
 
             <h3 className="text-lg font-semibold mt-4 mb-2 text-blue-700">
