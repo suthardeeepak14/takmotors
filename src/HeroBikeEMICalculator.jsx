@@ -60,7 +60,7 @@ export default function HeroBikeEMICalculator() {
         const totalInterest = monthlyInterest * interest;
         const totalPayable = loan + totalInterest;
         const emiValue = totalPayable / emi + extraPerEMI;
-        results[`${emi} (Interest ${interest})`] = emiValue.toFixed(0);
+        results[emi] = emiValue.toFixed(0);
       });
 
       setEmiResults(results);
