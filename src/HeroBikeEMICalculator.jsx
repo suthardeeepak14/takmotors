@@ -5,7 +5,7 @@ export default function HeroBikeEMICalculator() {
     { name: "DESTINI 110", price: 87700 },
     { name: "HF DLX SELF", price: 75500 },
     { name: "HF DLX SELF BLACK", price: 76700 },
-    { name: "HF DLX I3S ", price: 77100 },
+    { name: "HF DLX I3S", price: 77100 },
     { name: "HF DLX PRO I3S", price: 80900 },
     { name: "Splendor + SELF", price: 89500 },
     { name: "Splendor + I3S", price: 91000 },
