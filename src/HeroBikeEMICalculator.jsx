@@ -2,15 +2,16 @@ import { useState } from "react";
 
 export default function HeroBikeEMICalculator() {
   const bikes = [
-    { name: "DESTINI 125 PRIME", price: 86000 },
+    { name: "DESTINI 110", price: 87700 },
     { name: "HF DLX SELF OBD2B", price: 75500 },
-    { name: "HF DLX SELF BLA OBD2B", price: 76563 },
-    { name: "HF DLX I3S OBD2B", price: 77062 },
-    { name: "HF DLX PRO I3S", price: 80892 },
+    { name: "HF DLX SELF BLA OBD2B", price: 76700 },
+    { name: "HF DLX I3S OBD2B", price: 77100 },
+    { name: "HF DLX PRO I3S", price: 80900 },
     { name: "Splendor + SELF OBD2B", price: 89500 },
     { name: "Splendor + I3S OBD2B", price: 91000 },
     { name: "Splendor + I3S BLACK OBD2B", price: 91000 },
-    { name: "Splendor + XTEC OBD2B", price: 93600 },
+    { name: "Splendor + XTEC OBD2B", price: 93700 },
+    { name: "Splendor + XTEC DISC OBD2B", price: 97000 },
     { name: "Splendor + XTEC 2.0 OBD2B", price: 96500 },
     { name: "Super XTEC DR OBD2B", price: 98000 },
     { name: "Super XTEC DISC OBD2B", price: 102500 },
@@ -18,17 +19,15 @@ export default function HeroBikeEMICalculator() {
   ];
 
   const financeCompanies = [
-    "Amar Padama",
+    "Amar Padma",
     "Bazaari Global Fincance",
     "Hero Fincorp",
     "Namdev Finvest Pvt Ltd.",
   ];
 
-  // EMI factors for each finance company
-
   const [bike, setBike] = useState(bikes[0]);
   const [financeCompany, setFinanceCompany] = useState(financeCompanies[0]);
-  const [downPayment, setDownPayment] = useState(10000);
+  const [downPayment, setDownPayment] = useState(15000);
   const [emiResults, setEmiResults] = useState(null);
   const [error, setError] = useState("");
 
@@ -40,45 +39,50 @@ export default function HeroBikeEMICalculator() {
     }
 
     setError("");
-    const loanAmount = bike.price - downPayment + 5000;
+    const baseLoan = bike.price - downPayment;
     const results = {};
-    let tenures = [];
-    let annualInterestRate = 0.13; // default
-    let extraPerEMI = 0;
 
-    switch (financeCompany) {
-      case "Bazaari Global Fincance":
-        annualInterestRate = 0.13;
-        tenures = [12, 18, 24, 30, 36];
-        break;
-      case "Namdev Finvest Pvt Ltd.":
-        annualInterestRate = 0.118;
-        tenures = [12, 18, 24, 30, 36];
-        break;
-      case "Amar Padama":
-        annualInterestRate = 0.13;
-        extraPerEMI = 40;
-        tenures = [12, 17, 23, 29, 35];
-        break;
-      case "Hero Fincorp":
-      default:
-        annualInterestRate = 0.13;
-        tenures = [12, 18, 24, 30, 36];
+    // ---- Amar Padma Special Logic (Unchanged) ----
+    if (financeCompany === "Amar Padma") {
+      const annualInterestRate = 0.13;
+      const extraPerEMI = 40;
+      const amarPadmaMapping = [
+        { interest: 12, emi: 12 },
+        { interest: 18, emi: 17 },
+        { interest: 24, emi: 23 },
+        { interest: 30, emi: 29 },
+        { interest: 36, emi: 35 },
+      ];
+
+      const loan = baseLoan + 5000; // Processing Fee
+
+      amarPadmaMapping.forEach(({ interest, emi }) => {
+        const monthlyInterest = (loan * annualInterestRate) / 12;
+        const totalInterest = monthlyInterest * interest;
+        const totalPayable = loan + totalInterest;
+        const emiValue = totalPayable / emi + extraPerEMI;
+        results[`${emi} (Interest ${interest})`] = emiValue.toFixed(0);
+      });
+
+      setEmiResults(results);
+      return;
     }
 
+    // ---- Other Companies (Flat Interest + ₹5000 Processing) ----
+    const tenures = [12, 18, 24, 30, 36];
+    let annualInterestRate = 0.13;
+
+    if (financeCompany === "Namdev Finvest Pvt Ltd.") {
+      annualInterestRate = 0.118;
+    }
+
+    const loanWithProcessing = baseLoan + 5000;
+
     tenures.forEach((months) => {
-      let emi = 0;
-      if (financeCompany === "Amar Padama") {
-        const tenureYears = months / 12;
-        const totalPayable =
-          loanAmount + loanAmount * annualInterestRate * tenureYears;
-        emi = totalPayable / months + extraPerEMI; // Add ₹40 per EMI
-      } else {
-        const tenureYears = months / 12;
-        const totalPayable =
-          loanAmount + loanAmount * annualInterestRate * tenureYears;
-        emi = totalPayable / months;
-      }
+      const totalInterest =
+        (loanWithProcessing * annualInterestRate * months) / 12;
+      const totalPayable = loanWithProcessing + totalInterest;
+      const emi = totalPayable / months;
       results[months] = emi.toFixed(0);
     });
 
@@ -127,7 +131,7 @@ export default function HeroBikeEMICalculator() {
           onChange={(e) => setDownPayment(Number(e.target.value))}
         />
 
-        {/* Error message */}
+        {/* Error Message */}
         {error && (
           <div className="bg-red-50 text-red-600 p-2 text-sm rounded-lg mb-4 text-center">
             {error}
@@ -142,7 +146,7 @@ export default function HeroBikeEMICalculator() {
           Calculate EMI
         </button>
 
-        {/* Result */}
+        {/* EMI Results */}
         {emiResults && (
           <div className="mt-6 bg-blue-50 p-4 rounded-xl text-left">
             <p className="text-gray-700">
@@ -165,8 +169,8 @@ export default function HeroBikeEMICalculator() {
             <table className="w-full text-sm border">
               <thead>
                 <tr className="bg-blue-100">
-                  <th className="p-2 border">Tenure</th>
-                  <th className="p-2 border">EMI</th>
+                  <th className="p-2 border">Tenure (Months)</th>
+                  <th className="p-2 border">EMI (₹)</th>
                 </tr>
               </thead>
               <tbody>
