@@ -167,6 +167,14 @@ export default function HeroBikeEMICalculator() {
               <strong>Down Payment:</strong> ₹
               {Number(downPayment).toLocaleString()}
             </p>
+            <p className="text-gray-700">
+              <strong>Loan Amount:</strong> ₹
+              {Number(
+                financeCompany === "Amar Padma"
+                  ? bike.price - Number(downPayment) + 5000
+                  : bike.price - Number(downPayment) + 4500
+              ).toLocaleString()}
+            </p>
 
             <h3 className="text-lg font-semibold mt-4 mb-2 text-blue-700">
               EMI Breakdown by Tenure
