@@ -3,18 +3,17 @@ import { useState } from "react";
 export default function HeroBikeEMICalculator() {
   const bikes = [
     { name: "DESTINI 110", price: 87700 },
-    { name: "HF DLX SELF OBD2B", price: 75500 },
-    { name: "HF DLX SELF BLA OBD2B", price: 76700 },
-    { name: "HF DLX I3S OBD2B", price: 77100 },
+    { name: "HF DLX SELF", price: 75500 },
+    { name: "HF DLX SELF BLACK", price: 76700 },
+    { name: "HF DLX I3S ", price: 77100 },
     { name: "HF DLX PRO I3S", price: 80900 },
-    { name: "Splendor + SELF OBD2B", price: 89500 },
-    { name: "Splendor + I3S OBD2B", price: 91000 },
-    { name: "Splendor + I3S BLACK OBD2B", price: 91000 },
-    { name: "Splendor + XTEC OBD2B", price: 93700 },
-    { name: "Splendor + XTEC DISC OBD2B", price: 97000 },
-    { name: "Splendor + XTEC 2.0 OBD2B", price: 96500 },
-    { name: "Super XTEC DR OBD2B", price: 98000 },
-    { name: "Super XTEC DISC OBD2B", price: 102500 },
+    { name: "Splendor + SELF ", price: 89500 },
+    { name: "Splendor + I3S ", price: 91000 },
+    { name: "Splendor + XTEC ", price: 93700 },
+    { name: "Splendor + XTEC DISC ", price: 97000 },
+    { name: "Splendor + XTEC 2.0", price: 96500 },
+    { name: "Super XTEC DR ", price: 98000 },
+    { name: "Super XTEC DISC", price: 102500 },
     { name: "Xtreme 125R", price: 114600 },
   ];
 
