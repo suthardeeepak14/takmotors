@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function HeroBikeEMICalculator() {
   const bikes = [
@@ -28,6 +29,7 @@ export default function HeroBikeEMICalculator() {
   const [downPayment, setDownPayment] = useState("15000"); // Keep as string for input control
   const [emiResults, setEmiResults] = useState(null);
   const [error, setError] = useState("");
+  const [showLoanAmount, setShowLoanAmount] = useState(false);
 
   const calculateEMI = () => {
     const dp = Number(downPayment);
@@ -154,14 +156,27 @@ export default function HeroBikeEMICalculator() {
         {/* EMI Results */}
         {emiResults && (
           <div className="mt-6 bg-blue-50 p-4 rounded-xl text-left">
-            <p className="text-gray-700">
-              <strong>Loan Amount:</strong> ₹
-              {Number(
-                financeCompany === "Amar Padma"
-                  ? bike.price - Number(downPayment) + 5000
-                  : bike.price - Number(downPayment) + 4500
-              ).toLocaleString()}
-            </p>
+            {/* 👁️ Loan Amount with Toggle */}
+            <div className="flex items-center justify-between">
+              <p className="text-gray-700 font-medium">Loan Amount:</p>
+              <div className="flex items-center space-x-2">
+                <span className="text-red-800 font-semibold">
+                  {showLoanAmount
+                    ? `₹${Number(
+                        financeCompany === "Amar Padma"
+                          ? bike.price - Number(downPayment) + 5000
+                          : bike.price - Number(downPayment) + 4500
+                      ).toLocaleString()}`
+                    : "*****"}
+                </span>
+                <button
+                  onClick={() => setShowLoanAmount(!showLoanAmount)}
+                  className="text-gray-600 hover:text-blue-600"
+                >
+                  {showLoanAmount ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
             <p className="text-gray-700">
               <strong>Price:</strong> ₹{bike.price.toLocaleString()}
             </p>
