@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function HeroBikeEMICalculator() {
   const bikes = [
@@ -30,6 +30,7 @@ export default function HeroBikeEMICalculator() {
   const [emiResults, setEmiResults] = useState(null);
   const [error, setError] = useState("");
   const [showLoanAmount, setShowLoanAmount] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const calculateEMI = () => {
     const dp = Number(downPayment);
@@ -41,53 +42,59 @@ export default function HeroBikeEMICalculator() {
     }
 
     setError("");
-    const baseLoan = bike.price - dp;
-    const results = {};
+    setLoading(true);
+    setEmiResults(null);
+    setTimeout(() => {
+      const baseLoan = bike.price - dp;
+      const results = {};
 
-    if (financeCompany === "Amar Padma") {
-      const annualInterestRate = 0.13;
-      const extraPerEMI = 40;
-      const amarPadmaMapping = [
-        { interest: 12, emi: 12 },
-        { interest: 18, emi: 17 },
-        { interest: 24, emi: 23 },
-        { interest: 30, emi: 29 },
-        { interest: 36, emi: 35 },
-      ];
+      if (financeCompany === "Amar Padma") {
+        const annualInterestRate = 0.13;
+        const extraPerEMI = 40;
+        const amarPadmaMapping = [
+          { interest: 12, emi: 12 },
+          { interest: 18, emi: 17 },
+          { interest: 24, emi: 23 },
+          { interest: 30, emi: 29 },
+          { interest: 36, emi: 35 },
+        ];
 
-      const loan = baseLoan + 5000; // Amar Padma processing fee
+        const loan = baseLoan + 5000; // Amar Padma processing fee
 
-      amarPadmaMapping.forEach(({ interest, emi }) => {
-        const monthlyInterest = (loan * annualInterestRate) / 12;
-        const totalInterest = monthlyInterest * interest;
-        const totalPayable = loan + totalInterest;
-        const emiValue = totalPayable / emi + extraPerEMI;
-        results[emi] = emiValue.toFixed(0);
+        amarPadmaMapping.forEach(({ interest, emi }) => {
+          const monthlyInterest = (loan * annualInterestRate) / 12;
+          const totalInterest = monthlyInterest * interest;
+          const totalPayable = loan + totalInterest;
+          const emiValue = totalPayable / emi + extraPerEMI;
+          results[emi] = emiValue.toFixed(0);
+        });
+
+        setEmiResults(results);
+        setLoading(false);
+        return;
+      }
+
+      // Other Companies (Flat Interest + ₹4,500 Processing)
+      const tenures = [12, 18, 24, 30, 36];
+      let annualInterestRate = 0.13;
+
+      if (financeCompany === "Namdev Finvest Pvt Ltd.") {
+        annualInterestRate = 0.118;
+      }
+
+      const loanWithProcessing = baseLoan + 4500;
+
+      tenures.forEach((months) => {
+        const totalInterest =
+          (loanWithProcessing * annualInterestRate * months) / 12;
+        const totalPayable = loanWithProcessing + totalInterest;
+        const emi = totalPayable / months;
+        results[months] = emi.toFixed(0);
       });
 
       setEmiResults(results);
-      return;
-    }
-
-    // Other Companies (Flat Interest + ₹4,500 Processing)
-    const tenures = [12, 18, 24, 30, 36];
-    let annualInterestRate = 0.13;
-
-    if (financeCompany === "Namdev Finvest Pvt Ltd.") {
-      annualInterestRate = 0.118;
-    }
-
-    const loanWithProcessing = baseLoan + 4500;
-
-    tenures.forEach((months) => {
-      const totalInterest =
-        (loanWithProcessing * annualInterestRate * months) / 12;
-      const totalPayable = loanWithProcessing + totalInterest;
-      const emi = totalPayable / months;
-      results[months] = emi.toFixed(0);
-    });
-
-    setEmiResults(results);
+      setLoading(false);
+    }, 1200);
   };
   // useEffect(() => {
   //   calculateEMI();
@@ -148,9 +155,21 @@ export default function HeroBikeEMICalculator() {
         {/* Calculate Button */}
         <button
           onClick={calculateEMI}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold"
+          disabled={loading}
+          className={`w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded-lg font-semibold transition ${
+            loading
+              ? "opacity-70 cursor-not-allowed"
+              : "hover:bg-blue-700 cursor-pointer"
+          }`}
         >
-          Calculate EMI
+          {loading ? (
+            <>
+              <Loader2 className="animate-spin" size={18} />
+              Calculating...
+            </>
+          ) : (
+            "Calculate EMI"
+          )}
         </button>
 
         {/* EMI Results */}
