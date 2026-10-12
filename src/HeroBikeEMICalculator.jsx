@@ -23,7 +23,6 @@ export default function HeroBikeEMICalculator() {
 
   const financeCompanies = [
     "Amar Padma",
-    "Bazaari Global Fincance",
     "Namdev Finvest Pvt Ltd.",
   ];
 
@@ -107,8 +106,8 @@ export default function HeroBikeEMICalculator() {
       // Other companies
       const tenures = [12, 18, 24, 30, 36];
       let annualInterestRate =
-        financeCompany === "Namdev Finvest Pvt Ltd." ? 0.118 : 0.13;
-      const loan = baseLoan + 4500;
+        financeCompany === "Namdev Finvest Pvt Ltd." ? 0.122 : 0.13;
+      const loan = baseLoan + 5500;
 
       tenures.forEach((months) => {
         const totalInterest = (loan * annualInterestRate * months) / 12;
