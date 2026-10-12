@@ -3,19 +3,22 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function HeroBikeEMICalculator() {
   const bikes = [
-    { name: "DESTINI 110", price: 87700 },
-    { name: "HF DLX SELF", price: 75400 },
-    { name: "HF DLX SELF BLACK", price: 76600 },
-    { name: "HF DLX I3S", price: 77100 },
-    { name: "HF DLX PRO I3S", price: 80900 },
-    { name: "Splendor + SELF", price: 89500 },
-    { name: "Splendor + I3S", price: 91200 },
-    { name: "Splendor + XTEC", price: 93700 },
-    { name: "Splendor + XTEC DISC", price: 97000 },
-    { name: "Splendor + XTEC 2.0", price: 96400 },
-    { name: "Super XTEC DR", price: 97700 },
-    { name: "Super XTEC DISC", price: 102400 },
-    { name: "Xtreme 125R", price: 114600 },
+    { name: "DESTINI 110 FI VX OBD2B", price: 93041 },
+    { name: "DESTINI 125  OBD2B", price: 99698 },
+    { name: "DESTINI 125 XTEC ZX+ OBD2B", price: 110993},
+    { name: "HF DLX SELF OBD2B", price: 77277 },
+    { name: "HF DLX SELF OBD2B BLA", price: 74889 },
+    { name: "HF DLX I3S OBD2B", price: 79446 },
+    { name: "HF DLX PRO I3S", price: 83242 },
+    { name: "Splendor + SELF OBD2B", price: 95212 },
+    { name: "Splendor + I3S BLACK/MSG ", price: 96512 },
+    { name: "Splendor + I3S FLEX BLK ", price: 100853 },
+    { name: "Splendor + XTEC OBD2B", price: 99246 },
+    { name: "Splendor + XTEC DISC OBD2B", price: 102627 },
+    { name: "Splendor + XTEC 2.0 OBD2B", price: 101908 },
+    { name: "Super XTEC 2.0 OBD2B DR", price: 101433 },
+    { name: "Super XTEC 2.0 OBD2B DISC", price: 105805 },
+    { name: "Xtreme 125R DUAL ABS", price: 126545 },
   ];
 
   const financeCompanies = [
