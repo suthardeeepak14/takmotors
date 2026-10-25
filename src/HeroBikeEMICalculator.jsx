@@ -29,17 +29,27 @@ export default function HeroBikeEMICalculator() {
   ];
 
   const [bike, setBike] = useState(bikes[5]);
-  const [financeCompany, setFinanceCompany] = useState(financeCompanies[0]);
+  const [financeCompany, setFinanceCompany] = useState(
+    financeCompanies[0]
+  );
   const [downPayment, setDownPayment] = useState("15000");
   const [discount, setDiscount] = useState("0");
+  const [showDiscount, setShowDiscount] = useState(false);
+
   const [emiResults, setEmiResults] = useState(null);
   const [error, setError] = useState("");
   const [showLoanAmount, setShowLoanAmount] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [calculatedDownPayment, setCalculatedDownPayment] = useState(null);
-  const [calculatedLoanAmount, setCalculatedLoanAmount] = useState(null);
+
+  const [calculatedDownPayment, setCalculatedDownPayment] =
+    useState(null);
+  const [calculatedLoanAmount, setCalculatedLoanAmount] =
+    useState(null);
   const [calculatedDiscount, setCalculatedDiscount] = useState(null);
   const [calculatedBikePrice, setCalculatedBikePrice] = useState(null);
+  const [calculatedFinanceCompany, setCalculatedFinanceCompany] =
+    useState(null);
+  const [calculatedBikeName, setCalculatedBikeName] = useState(null);
 
   const money = (value) =>
     `₹${Number(value).toLocaleString("en-IN")}`;
@@ -50,6 +60,8 @@ export default function HeroBikeEMICalculator() {
     setCalculatedLoanAmount(null);
     setCalculatedDiscount(null);
     setCalculatedBikePrice(null);
+    setCalculatedFinanceCompany(null);
+    setCalculatedBikeName(null);
     setError("");
   };
 
@@ -59,7 +71,10 @@ export default function HeroBikeEMICalculator() {
   };
 
   const handleBikeChange = (value) => {
-    setBike(bikes.find((b) => b.name === value));
+    const selectedBike = bikes.find((b) => b.name === value);
+    if (!selectedBike) return;
+
+    setBike(selectedBike);
     clearResults();
   };
 
@@ -73,10 +88,22 @@ export default function HeroBikeEMICalculator() {
     clearResults();
   };
 
+  const handleRemoveDiscount = () => {
+    setDiscount("0");
+    setShowDiscount(false);
+    clearResults();
+  };
+
   const calculateEMI = () => {
     const dp = Number(downPayment || 0);
-    const disc = Number(discount || 0);
+    const disc = showDiscount ? Number(discount || 0) : 0;
     const finalPrice = bike.price - disc;
+
+    if (!Number.isFinite(dp) || !Number.isFinite(disc)) {
+      setError("Please enter valid amounts.");
+      setEmiResults(null);
+      return;
+    }
 
     if (disc < 0 || disc >= bike.price) {
       setError("Discount must be less than the original bike price.");
@@ -85,7 +112,9 @@ export default function HeroBikeEMICalculator() {
     }
 
     if (dp < 0 || dp >= finalPrice) {
-      setError("Down payment must be less than the discounted bike price.");
+      setError(
+        "Down payment must be less than the discounted bike price."
+      );
       setEmiResults(null);
       return;
     }
@@ -94,57 +123,71 @@ export default function HeroBikeEMICalculator() {
     setLoading(true);
     setEmiResults(null);
 
-    // Calculate loan using discounted price
-    const baseLoan = finalPrice - dp;
-    const results = {};
+    // Preserve the original calculation formulas.
+    // The discount is applied before calculating the loan.
+    window.setTimeout(() => {
+      const baseLoan = finalPrice - dp;
+      const results = {};
 
-    if (financeCompany === "Amar Padma") {
-      const annualInterestRate = 0.13;
-      const extraPerEMI = 40;
-      const loan = baseLoan + 5000;
+      if (financeCompany === "Amar Padma") {
+        const annualInterestRate = 0.13;
+        const extraPerEMI = 40;
 
-      const mapping = [
-        { interest: 12, emi: 12 },
-        { interest: 18, emi: 17 },
-        { interest: 24, emi: 23 },
-        { interest: 30, emi: 29 },
-        { interest: 36, emi: 35 },
-      ];
+        const mapping = [
+          { interest: 12, emi: 12 },
+          { interest: 18, emi: 17 },
+          { interest: 24, emi: 23 },
+          { interest: 30, emi: 29 },
+          { interest: 36, emi: 35 },
+        ];
 
-      mapping.forEach(({ interest, emi }) => {
-        const monthlyInterest = (loan * annualInterestRate) / 12;
-        const totalInterest = monthlyInterest * interest;
-        const totalPayable = loan + totalInterest;
+        const loan = baseLoan + 5000;
 
-        results[emi] = Math.round(
-          totalPayable / emi + extraPerEMI
-        );
-      });
+        mapping.forEach(({ interest, emi }) => {
+          const monthlyInterest =
+            (loan * annualInterestRate) / 12;
 
-      setCalculatedLoanAmount(loan);
-    } else {
-      const tenures = [12, 18, 24, 30, 36];
-      const annualInterestRate =
-        financeCompany === "Namdev Finvest Pvt Ltd." ? 0.122 : 0.13;
+          const totalInterest = monthlyInterest * interest;
+          const totalPayable = loan + totalInterest;
 
-      const loan = baseLoan + 5500;
+          results[emi] = Math.round(
+            totalPayable / emi + extraPerEMI
+          );
+        });
 
-      tenures.forEach((months) => {
-        const totalInterest =
-          (loan * annualInterestRate * months) / 12;
+        setCalculatedLoanAmount(loan);
+      } else {
+        const tenures = [12, 18, 24, 30, 36];
 
-        const totalPayable = loan + totalInterest;
-        results[months] = Math.round(totalPayable / months);
-      });
+        const annualInterestRate =
+          financeCompany === "Namdev Finvest Pvt Ltd."
+            ? 0.122
+            : 0.13;
 
-      setCalculatedLoanAmount(loan);
-    }
+        const loan = baseLoan + 5500;
 
-    setCalculatedDownPayment(dp);
-    setCalculatedDiscount(disc);
-    setCalculatedBikePrice(finalPrice);
-    setEmiResults(results);
-    setLoading(false);
+        tenures.forEach((months) => {
+          const totalInterest =
+            (loan * annualInterestRate * months) / 12;
+
+          const totalPayable = loan + totalInterest;
+
+          results[months] = Math.round(
+            totalPayable / months
+          );
+        });
+
+        setCalculatedLoanAmount(loan);
+      }
+
+      setCalculatedDownPayment(dp);
+      setCalculatedDiscount(disc);
+      setCalculatedBikePrice(finalPrice);
+      setCalculatedFinanceCompany(financeCompany);
+      setCalculatedBikeName(bike.name);
+      setEmiResults(results);
+      setLoading(false);
+    }, 1200);
   };
 
   return (
@@ -154,11 +197,13 @@ export default function HeroBikeEMICalculator() {
           Hero Bike EMI Calculator
         </h1>
 
+        {/* Finance Company */}
         <label className="block mb-2 font-medium">
           Select Finance Company
         </label>
+
         <select
-          className="w-full border rounded-lg p-2 mb-4"
+          className="w-full border rounded-lg p-2 mb-4 outline-none focus:ring-2 focus:ring-blue-500"
           value={financeCompany}
           onChange={(e) => handleFinanceChange(e.target.value)}
           disabled={loading}
@@ -170,11 +215,13 @@ export default function HeroBikeEMICalculator() {
           ))}
         </select>
 
+        {/* Bike Model */}
         <label className="block mb-2 font-medium">
           Select Bike Model
         </label>
+
         <select
-          className="w-full border rounded-lg p-2 mb-4"
+          className="w-full border rounded-lg p-2 mb-4 outline-none focus:ring-2 focus:ring-blue-500"
           value={bike.name}
           onChange={(e) => handleBikeChange(e.target.value)}
           disabled={loading}
@@ -186,59 +233,117 @@ export default function HeroBikeEMICalculator() {
           ))}
         </select>
 
+        {/* Bike Price */}
         <div className="bg-gray-50 border rounded-xl p-3 mb-4">
-          <div className="flex justify-between mb-2">
-            <span className="text-gray-600">Original Bike Price</span>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-gray-600">Bike Price</span>
             <strong>{money(bike.price)}</strong>
           </div>
 
-          <label className="block mb-2 font-medium text-green-700">
-            Discount (₹)
-          </label>
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="Enter discount amount"
-            className="w-full border rounded-lg p-2 mb-3"
-            value={discount}
-            onChange={(e) => handleDiscountChange(e.target.value)}
-            disabled={loading}
-          />
+          {/* Optional Discount */}
+          <div className="mt-3">
+            {!showDiscount ? (
+              <button
+                type="button"
+                onClick={() => setShowDiscount(true)}
+                disabled={loading}
+                className="text-blue-600 font-medium hover:text-blue-700 disabled:opacity-50"
+              >
+                + Add Discount
+              </button>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  <label
+                    htmlFor="bike-discount"
+                    className="font-medium text-gray-700"
+                  >
+                    Discount (₹)
+                  </label>
 
-          <div className="flex justify-between">
-            <span className="text-gray-600">Discounted Bike Price</span>
-            <strong className="text-green-700">
-              {money(bike.price - Number(discount || 0))}
-            </strong>
+                  <button
+                    type="button"
+                    onClick={handleRemoveDiscount}
+                    disabled={loading}
+                    className="text-sm text-red-600 hover:text-red-700"
+                  >
+                    Remove
+                  </button>
+                </div>
+
+                <input
+                  id="bike-discount"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Enter discount amount"
+                  className="w-full border rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500"
+                  value={discount}
+                  onChange={(e) =>
+                    handleDiscountChange(e.target.value)
+                  }
+                  disabled={loading}
+                />
+
+                <div className="flex justify-between gap-3 mt-3 text-sm">
+                  <span className="text-gray-600">
+                    Discounted Price
+                  </span>
+                  <strong className="text-green-700">
+                    {money(
+                      Math.max(
+                        0,
+                        bike.price - Number(discount || 0)
+                      )
+                    )}
+                  </strong>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        <label className="block mb-2 font-medium">
+        {/* Down Payment */}
+        <label
+          htmlFor="down-payment"
+          className="block mb-2 font-medium"
+        >
           Down Payment (₹)
         </label>
+
         <input
+          id="down-payment"
           type="text"
           inputMode="numeric"
-          className="w-full border rounded-lg p-2 mb-4"
+          className="w-full border rounded-lg p-2 mb-4 outline-none focus:ring-2 focus:ring-blue-500"
           value={downPayment}
-          onChange={(e) => handleDownPaymentChange(e.target.value)}
+          onChange={(e) =>
+            handleDownPaymentChange(e.target.value)
+          }
           disabled={loading}
         />
 
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 text-sm rounded-lg mb-4">
+          <div
+            role="alert"
+            className="bg-red-50 text-red-600 p-3 text-sm rounded-lg mb-4 text-center"
+          >
             {error}
           </div>
         )}
 
+        {/* Calculate Button */}
         <button
+          type="button"
           onClick={calculateEMI}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-70"
+          className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-semibold transition hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>
-              <Loader2 className="animate-spin" size={18} />
+              <Loader2
+                className="animate-spin"
+                size={18}
+              />
               Calculating...
             </>
           ) : (
@@ -246,22 +351,31 @@ export default function HeroBikeEMICalculator() {
           )}
         </button>
 
+        {/* EMI Results */}
         {emiResults && (
-          <div className="mt-6 bg-blue-50 p-4 rounded-xl">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-gray-700 font-medium">Loan Amount</p>
+          <div className="mt-6 bg-blue-50 p-4 rounded-xl text-left">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <p className="text-gray-700 font-medium">
+                Loan Amount
+              </p>
+
               <div className="flex items-center gap-2">
-                <strong className="text-red-800">
+                <span className="text-red-800 font-semibold">
                   {showLoanAmount
                     ? money(calculatedLoanAmount)
                     : "*****"}
-                </strong>
+                </span>
+
                 <button
                   type="button"
-                  onClick={() => setShowLoanAmount(!showLoanAmount)}
-                  className="text-gray-600"
+                  onClick={() =>
+                    setShowLoanAmount((previous) => !previous)
+                  }
+                  className="text-gray-600 hover:text-blue-600"
                   aria-label={
-                    showLoanAmount ? "Hide loan amount" : "Show loan amount"
+                    showLoanAmount
+                      ? "Hide loan amount"
+                      : "Show loan amount"
                   }
                 >
                   {showLoanAmount ? (
@@ -273,24 +387,33 @@ export default function HeroBikeEMICalculator() {
               </div>
             </div>
 
-            <p className="mb-1">
-              <strong>Original Price:</strong> {money(bike.price)}
+            <p className="text-gray-700 mb-1">
+              <strong>Original Price:</strong>{" "}
+              {money(bike.price)}
             </p>
-            <p className="mb-1 text-green-700">
-              <strong>Discount Applied:</strong>{" "}
-              {money(calculatedDiscount)}
-            </p>
-            <p className="mb-1">
+
+            {calculatedDiscount > 0 && (
+              <p className="text-green-700 mb-1">
+                <strong>Discount Applied:</strong>{" "}
+                {money(calculatedDiscount)}
+              </p>
+            )}
+
+            <p className="text-gray-700 mb-1">
               <strong>Final Bike Price:</strong>{" "}
               {money(calculatedBikePrice)}
             </p>
-            <p className="mb-1">
-              <strong>Finance Company:</strong> {financeCompany}
+
+            <p className="text-gray-700 mb-1">
+              <strong>Finance Company:</strong>{" "}
+              {calculatedFinanceCompany}
             </p>
-            <p className="mb-1">
-              <strong>Bike:</strong> {bike.name}
+
+            <p className="text-gray-700 mb-1">
+              <strong>Bike:</strong> {calculatedBikeName}
             </p>
-            <p className="mb-1">
+
+            <p className="text-gray-700 mb-1">
               <strong>Down Payment:</strong>{" "}
               {money(calculatedDownPayment)}
             </p>
@@ -302,25 +425,33 @@ export default function HeroBikeEMICalculator() {
             <table className="w-full text-sm border-collapse border">
               <thead>
                 <tr className="bg-blue-100">
-                  <th className="p-2 border">Tenure (Months)</th>
+                  <th className="p-2 border">
+                    Tenure (Months)
+                  </th>
                   <th className="p-2 border">EMI (₹)</th>
                 </tr>
               </thead>
+
               <tbody>
-                {Object.entries(emiResults).map(([months, value]) => (
-                  <tr key={months}>
-                    <td className="border p-2 text-center">{months}</td>
-                    <td className="border p-2 text-center font-semibold text-green-600">
-                      {money(value)}
-                    </td>
-                  </tr>
-                ))}
+                {Object.entries(emiResults).map(
+                  ([months, value]) => (
+                    <tr key={months}>
+                      <td className="border p-2 text-center">
+                        {months}
+                      </td>
+                      <td className="border p-2 text-center font-semibold text-green-600">
+                        {money(value)}
+                      </td>
+                    </tr>
+                  )
+                )}
               </tbody>
             </table>
 
             <p className="text-xs text-gray-500 mt-3">
-              EMI is an estimate based on the configured interest and
-              finance charges. Confirm the final amount with the finance company.
+              EMI is an estimate based on the configured interest
+              rate and finance charges. Confirm the final amount
+              with the finance company.
             </p>
           </div>
         )}
