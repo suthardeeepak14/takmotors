@@ -3,22 +3,23 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function HeroBikeEMICalculator() {
   const bikes = [
-    { name: "DESTINI 110 FI VX OBD2B", price: 93041 },
-    { name: "DESTINI 125  OBD2B", price: 99698 },
-    { name: "DESTINI 125 XTEC ZX+ OBD2B", price: 110993},
-    { name: "HF DLX SELF OBD2B", price: 77277 },
+    { name: "DESTINI 110 FI VX OBD2B", price: 95141 },
+    { name: "DESTINI 125  OBD2B", price: 102198 },
+    { name: "DESTINI 125 XTEC ZX+ OBD2B", price: 113493},
+    { name: "HF DLX SELF OBD2B", price: 79777 },
     { name: "HF DLX SELF OBD2B BLA", price: 74889 },
-    { name: "HF DLX I3S OBD2B", price: 79446 },
-    { name: "HF DLX PRO I3S", price: 83242 },
+    { name: "HF DLX I3S OBD2B", price: 81946 },
+    { name: "HF DLX PRO I3S", price: 85742 },
     { name: "Splendor + SELF OBD2B", price: 95212 },
     { name: "Splendor + I3S BLACK/MSG ", price: 96512 },
     { name: "Splendor + I3S FLEX BLK ", price: 100853 },
     { name: "Splendor + XTEC OBD2B", price: 99246 },
     { name: "Splendor + XTEC DISC OBD2B", price: 102627 },
     { name: "Splendor + XTEC 2.0 OBD2B", price: 101908 },
-    { name: "Super XTEC 2.0 OBD2B DR", price: 101433 },
-    { name: "Super XTEC 2.0 OBD2B DISC", price: 105805 },
-    { name: "Xtreme 125R DUAL ABS", price: 126545 },
+    { name: "Super XTEC 2.0 OBD2B DR", price: 103633 },
+    { name: "Super XTEC 2.0 OBD2B DISC", price: 108005 },
+    { name: "GLAMOUR X DISC", price: 115384 },
+    { name: "Xtreme 125R DUAL ABS", price: 129545 },
   ];
 
   const financeCompanies = [
