@@ -33,23 +33,29 @@ export default function HeroBikeEMICalculator() {
     financeCompanies[0]
   );
   const [downPayment, setDownPayment] = useState("15000");
-  const [discount, setDiscount] = useState("0");
+
+  // Discount is optional and disabled by default.
   const [showDiscount, setShowDiscount] = useState(false);
+  const [discount, setDiscount] = useState("0");
 
   const [emiResults, setEmiResults] = useState(null);
   const [error, setError] = useState("");
-  const [showLoanAmount, setShowLoanAmount] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showLoanAmount, setShowLoanAmount] = useState(false);
 
   const [calculatedDownPayment, setCalculatedDownPayment] =
     useState(null);
   const [calculatedLoanAmount, setCalculatedLoanAmount] =
     useState(null);
-  const [calculatedDiscount, setCalculatedDiscount] = useState(null);
-  const [calculatedBikePrice, setCalculatedBikePrice] = useState(null);
+  const [calculatedDiscount, setCalculatedDiscount] = useState(0);
+  const [calculatedBikePrice, setCalculatedBikePrice] =
+    useState(null);
+  const [calculatedBikeName, setCalculatedBikeName] =
+    useState(null);
   const [calculatedFinanceCompany, setCalculatedFinanceCompany] =
     useState(null);
-  const [calculatedBikeName, setCalculatedBikeName] = useState(null);
+  const [calculatedOriginalPrice, setCalculatedOriginalPrice] =
+    useState(null);
 
   const money = (value) =>
     `₹${Number(value).toLocaleString("en-IN")}`;
@@ -58,10 +64,11 @@ export default function HeroBikeEMICalculator() {
     setEmiResults(null);
     setCalculatedDownPayment(null);
     setCalculatedLoanAmount(null);
-    setCalculatedDiscount(null);
+    setCalculatedDiscount(0);
     setCalculatedBikePrice(null);
-    setCalculatedFinanceCompany(null);
     setCalculatedBikeName(null);
+    setCalculatedFinanceCompany(null);
+    setCalculatedOriginalPrice(null);
     setError("");
   };
 
@@ -72,7 +79,6 @@ export default function HeroBikeEMICalculator() {
 
   const handleBikeChange = (value) => {
     const selectedBike = bikes.find((item) => item.name === value);
-
     if (!selectedBike) return;
 
     setBike(selectedBike);
@@ -84,112 +90,147 @@ export default function HeroBikeEMICalculator() {
     clearResults();
   };
 
+  // Shared calculation function.
+  // Accepts explicit values so discount changes can recalculate
+  // immediately without waiting for React state updates.
+  const calculateWithValues = (
+    dpValue,
+    discountValue,
+    discountEnabled
+  ) => {
+    const dp = Number(dpValue || 0);
+    const disc = discountEnabled ? Number(discountValue || 0) : 0;
+    const originalPrice = bike.price;
+    const finalPrice = originalPrice - disc;
+
+    if (
+      !Number.isFinite(dp) ||
+      !Number.isFinite(disc) ||
+      dp < 0 ||
+      disc < 0
+    ) {
+      setError("Please enter valid amounts.");
+      setEmiResults(null);
+      return false;
+    }
+
+    if (disc >= originalPrice) {
+      setError("Discount must be less than the bike price.");
+      setEmiResults(null);
+      return false;
+    }
+
+    if (dp >= finalPrice) {
+      setError(
+        "Down payment must be less than the final bike price."
+      );
+      setEmiResults(null);
+      return false;
+    }
+
+    const baseLoan = finalPrice - dp;
+    const results = {};
+    let loan = 0;
+
+    if (financeCompany === "Amar Padma") {
+      const annualInterestRate = 0.13;
+      const extraPerEMI = 40;
+
+      const mapping = [
+        { interest: 12, emi: 12 },
+        { interest: 18, emi: 17 },
+        { interest: 24, emi: 23 },
+        { interest: 30, emi: 29 },
+        { interest: 36, emi: 35 },
+      ];
+
+      loan = baseLoan + 5000;
+
+      mapping.forEach(({ interest, emi }) => {
+        const monthlyInterest =
+          (loan * annualInterestRate) / 12;
+        const totalInterest = monthlyInterest * interest;
+        const totalPayable = loan + totalInterest;
+
+        results[emi] = Math.round(
+          totalPayable / emi + extraPerEMI
+        );
+      });
+    } else {
+      const tenures = [12, 18, 24, 30, 36];
+
+      const annualInterestRate =
+        financeCompany === "Namdev Finvest Pvt Ltd."
+          ? 0.122
+          : 0.13;
+
+      loan = baseLoan + 5500;
+
+      tenures.forEach((months) => {
+        const totalInterest =
+          (loan * annualInterestRate * months) / 12;
+        const totalPayable = loan + totalInterest;
+
+        results[months] = Math.round(totalPayable / months);
+      });
+    }
+
+    setError("");
+    setCalculatedDownPayment(dp);
+    setCalculatedLoanAmount(loan);
+    setCalculatedDiscount(disc);
+    setCalculatedBikePrice(finalPrice);
+    setCalculatedOriginalPrice(originalPrice);
+    setCalculatedBikeName(bike.name);
+    setCalculatedFinanceCompany(financeCompany);
+    setEmiResults(results);
+
+    return true;
+  };
+
+  const calculateEMI = () => {
+    setLoading(true);
+    setError("");
+
+    // Preserve the loading indicator on the main Calculate button.
+    window.setTimeout(() => {
+      calculateWithValues(
+        downPayment,
+        discount,
+        showDiscount
+      );
+      setLoading(false);
+    }, 400);
+  };
+
   const handleDiscountChange = (value) => {
-    setDiscount(value.replace(/\D/g, ""));
-    clearResults();
+    const sanitized = value.replace(/\D/g, "");
+    setDiscount(sanitized);
+    setError("");
+
+    // If results already exist, update EMI immediately.
+    // The client does not need to press Calculate EMI again.
+    if (emiResults !== null) {
+      calculateWithValues(
+        downPayment,
+        sanitized,
+        showDiscount
+      );
+    }
   };
 
   const handleDiscountToggle = (enabled) => {
     setShowDiscount(enabled);
+    setError("");
 
     if (!enabled) {
       setDiscount("0");
-    }
 
-    clearResults();
-  };
-
-  const calculateEMI = () => {
-    const dp = Number(downPayment || 0);
-    const disc = showDiscount ? Number(discount || 0) : 0;
-    const finalPrice = bike.price - disc;
-
-    if (!Number.isFinite(dp) || !Number.isFinite(disc)) {
-      setError("Please enter valid amounts.");
-      setEmiResults(null);
-      return;
-    }
-
-    if (disc < 0 || disc >= bike.price) {
-      setError("Discount must be less than the bike price.");
-      setEmiResults(null);
-      return;
-    }
-
-    if (dp < 0 || dp >= finalPrice) {
-      setError(
-        "Down payment must be less than the discounted bike price."
-      );
-      setEmiResults(null);
-      return;
-    }
-
-    setError("");
-    setLoading(true);
-    setEmiResults(null);
-
-    // Discount is deducted before calculating the loan.
-    // Original finance charges and interest formulas are preserved.
-    window.setTimeout(() => {
-      const baseLoan = finalPrice - dp;
-      const results = {};
-      let loan;
-
-      if (financeCompany === "Amar Padma") {
-        const annualInterestRate = 0.13;
-        const extraPerEMI = 40;
-
-        const mapping = [
-          { interest: 12, emi: 12 },
-          { interest: 18, emi: 17 },
-          { interest: 24, emi: 23 },
-          { interest: 30, emi: 29 },
-          { interest: 36, emi: 35 },
-        ];
-
-        loan = baseLoan + 5000;
-
-        mapping.forEach(({ interest, emi }) => {
-          const monthlyInterest =
-            (loan * annualInterestRate) / 12;
-          const totalInterest = monthlyInterest * interest;
-          const totalPayable = loan + totalInterest;
-
-          results[emi] = Math.round(
-            totalPayable / emi + extraPerEMI
-          );
-        });
-      } else {
-        const tenures = [12, 18, 24, 30, 36];
-
-        const annualInterestRate =
-          financeCompany === "Namdev Finvest Pvt Ltd."
-            ? 0.122
-            : 0.13;
-
-        loan = baseLoan + 5500;
-
-        tenures.forEach((months) => {
-          const totalInterest =
-            (loan * annualInterestRate * months) / 12;
-          const totalPayable = loan + totalInterest;
-
-          results[months] = Math.round(
-            totalPayable / months
-          );
-        });
+      // Immediately return to normal EMI if results are visible.
+      if (emiResults !== null) {
+        calculateWithValues(downPayment, "0", false);
       }
-
-      setCalculatedDownPayment(dp);
-      setCalculatedLoanAmount(loan);
-      setCalculatedDiscount(disc);
-      setCalculatedBikePrice(finalPrice);
-      setCalculatedFinanceCompany(financeCompany);
-      setCalculatedBikeName(bike.name);
-
-      setEmiResults(results);
-      setLoading(false);
-    }, 1200);
+    }
   };
 
   return (
@@ -244,7 +285,7 @@ export default function HeroBikeEMICalculator() {
         </select>
 
         {/* Original Bike Price */}
-        <div className="flex justify-between items-center mb-4 p-3 bg-gray-50 border rounded-lg">
+        <div className="flex items-center justify-between gap-3 mb-4 p-3 bg-gray-50 border rounded-lg">
           <span className="text-gray-700 font-medium">
             Bike Price
           </span>
@@ -271,7 +312,7 @@ export default function HeroBikeEMICalculator() {
           disabled={loading}
         />
 
-        {/* Discount Toggle - Below Down Payment */}
+        {/* Optional Discount - Below Down Payment */}
         <div className="mb-4 p-3 border rounded-lg">
           <div className="flex items-center justify-between gap-3">
             <span className="font-medium text-gray-700">
@@ -305,7 +346,6 @@ export default function HeroBikeEMICalculator() {
             </div>
           </div>
 
-          {/* Only show the textbox when Yes is selected */}
           {showDiscount && (
             <div className="mt-3">
               <label
@@ -395,20 +435,7 @@ export default function HeroBikeEMICalculator() {
             </div>
 
             <p className="text-gray-700 mb-1">
-              <strong>Original Price:</strong>{" "}
-              {money(bike.price)}
-            </p>
-
-            {calculatedDiscount > 0 && (
-              <p className="text-green-700 mb-1">
-                <strong>Discount Applied:</strong>{" "}
-                {money(calculatedDiscount)}
-              </p>
-            )}
-
-            <p className="text-gray-700 mb-1">
-              <strong>Final Bike Price:</strong>{" "}
-              {money(calculatedBikePrice)}
+              <strong>Bike:</strong> {calculatedBikeName}
             </p>
 
             <p className="text-gray-700 mb-1">
@@ -417,8 +444,24 @@ export default function HeroBikeEMICalculator() {
             </p>
 
             <p className="text-gray-700 mb-1">
-              <strong>Bike:</strong> {calculatedBikeName}
+              <strong>Original Price:</strong>{" "}
+              {money(calculatedOriginalPrice)}
             </p>
+
+            {/* Show these only if a discount was actually applied */}
+            {calculatedDiscount > 0 && (
+              <>
+                <p className="text-green-700 mb-1">
+                  <strong>Discount Applied:</strong>{" "}
+                  {money(calculatedDiscount)}
+                </p>
+
+                <p className="text-green-700 mb-1">
+                  <strong>Final Price:</strong>{" "}
+                  {money(calculatedBikePrice)}
+                </p>
+              </>
+            )}
 
             <p className="text-gray-700 mb-1">
               <strong>Down Payment:</strong>{" "}
