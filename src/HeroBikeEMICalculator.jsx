@@ -71,7 +71,8 @@ export default function HeroBikeEMICalculator() {
   };
 
   const handleBikeChange = (value) => {
-    const selectedBike = bikes.find((b) => b.name === value);
+    const selectedBike = bikes.find((item) => item.name === value);
+
     if (!selectedBike) return;
 
     setBike(selectedBike);
@@ -88,9 +89,13 @@ export default function HeroBikeEMICalculator() {
     clearResults();
   };
 
-  const handleRemoveDiscount = () => {
-    setDiscount("0");
-    setShowDiscount(false);
+  const handleDiscountToggle = (enabled) => {
+    setShowDiscount(enabled);
+
+    if (!enabled) {
+      setDiscount("0");
+    }
+
     clearResults();
   };
 
@@ -106,7 +111,7 @@ export default function HeroBikeEMICalculator() {
     }
 
     if (disc < 0 || disc >= bike.price) {
-      setError("Discount must be less than the original bike price.");
+      setError("Discount must be less than the bike price.");
       setEmiResults(null);
       return;
     }
@@ -123,11 +128,12 @@ export default function HeroBikeEMICalculator() {
     setLoading(true);
     setEmiResults(null);
 
-    // Preserve the original calculation formulas.
-    // The discount is applied before calculating the loan.
+    // Discount is deducted before calculating the loan.
+    // Original finance charges and interest formulas are preserved.
     window.setTimeout(() => {
       const baseLoan = finalPrice - dp;
       const results = {};
+      let loan;
 
       if (financeCompany === "Amar Padma") {
         const annualInterestRate = 0.13;
@@ -141,12 +147,11 @@ export default function HeroBikeEMICalculator() {
           { interest: 36, emi: 35 },
         ];
 
-        const loan = baseLoan + 5000;
+        loan = baseLoan + 5000;
 
         mapping.forEach(({ interest, emi }) => {
           const monthlyInterest =
             (loan * annualInterestRate) / 12;
-
           const totalInterest = monthlyInterest * interest;
           const totalPayable = loan + totalInterest;
 
@@ -154,8 +159,6 @@ export default function HeroBikeEMICalculator() {
             totalPayable / emi + extraPerEMI
           );
         });
-
-        setCalculatedLoanAmount(loan);
       } else {
         const tenures = [12, 18, 24, 30, 36];
 
@@ -164,27 +167,26 @@ export default function HeroBikeEMICalculator() {
             ? 0.122
             : 0.13;
 
-        const loan = baseLoan + 5500;
+        loan = baseLoan + 5500;
 
         tenures.forEach((months) => {
           const totalInterest =
             (loan * annualInterestRate * months) / 12;
-
           const totalPayable = loan + totalInterest;
 
           results[months] = Math.round(
             totalPayable / months
           );
         });
-
-        setCalculatedLoanAmount(loan);
       }
 
       setCalculatedDownPayment(dp);
+      setCalculatedLoanAmount(loan);
       setCalculatedDiscount(disc);
       setCalculatedBikePrice(finalPrice);
       setCalculatedFinanceCompany(financeCompany);
       setCalculatedBikeName(bike.name);
+
       setEmiResults(results);
       setLoading(false);
     }, 1200);
@@ -198,11 +200,15 @@ export default function HeroBikeEMICalculator() {
         </h1>
 
         {/* Finance Company */}
-        <label className="block mb-2 font-medium">
+        <label
+          htmlFor="finance-company"
+          className="block mb-2 font-medium"
+        >
           Select Finance Company
         </label>
 
         <select
+          id="finance-company"
           className="w-full border rounded-lg p-2 mb-4 outline-none focus:ring-2 focus:ring-blue-500"
           value={financeCompany}
           onChange={(e) => handleFinanceChange(e.target.value)}
@@ -216,90 +222,33 @@ export default function HeroBikeEMICalculator() {
         </select>
 
         {/* Bike Model */}
-        <label className="block mb-2 font-medium">
+        <label
+          htmlFor="bike-model"
+          className="block mb-2 font-medium"
+        >
           Select Bike Model
         </label>
 
         <select
+          id="bike-model"
           className="w-full border rounded-lg p-2 mb-4 outline-none focus:ring-2 focus:ring-blue-500"
           value={bike.name}
           onChange={(e) => handleBikeChange(e.target.value)}
           disabled={loading}
         >
-          {bikes.map((b) => (
-            <option key={b.name} value={b.name}>
-              {b.name}
+          {bikes.map((item) => (
+            <option key={item.name} value={item.name}>
+              {item.name}
             </option>
           ))}
         </select>
 
-        {/* Bike Price */}
-        <div className="bg-gray-50 border rounded-xl p-3 mb-4">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-gray-600">Bike Price</span>
-            <strong>{money(bike.price)}</strong>
-          </div>
-
-          {/* Optional Discount */}
-          <div className="mt-3">
-            {!showDiscount ? (
-              <button
-                type="button"
-                onClick={() => setShowDiscount(true)}
-                disabled={loading}
-                className="text-blue-600 font-medium hover:text-blue-700 disabled:opacity-50"
-              >
-                + Add Discount
-              </button>
-            ) : (
-              <>
-                <div className="flex items-center justify-between mb-2">
-                  <label
-                    htmlFor="bike-discount"
-                    className="font-medium text-gray-700"
-                  >
-                    Discount (₹)
-                  </label>
-
-                  <button
-                    type="button"
-                    onClick={handleRemoveDiscount}
-                    disabled={loading}
-                    className="text-sm text-red-600 hover:text-red-700"
-                  >
-                    Remove
-                  </button>
-                </div>
-
-                <input
-                  id="bike-discount"
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="Enter discount amount"
-                  className="w-full border rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500"
-                  value={discount}
-                  onChange={(e) =>
-                    handleDiscountChange(e.target.value)
-                  }
-                  disabled={loading}
-                />
-
-                <div className="flex justify-between gap-3 mt-3 text-sm">
-                  <span className="text-gray-600">
-                    Discounted Price
-                  </span>
-                  <strong className="text-green-700">
-                    {money(
-                      Math.max(
-                        0,
-                        bike.price - Number(discount || 0)
-                      )
-                    )}
-                  </strong>
-                </div>
-              </>
-            )}
-          </div>
+        {/* Original Bike Price */}
+        <div className="flex justify-between items-center mb-4 p-3 bg-gray-50 border rounded-lg">
+          <span className="text-gray-700 font-medium">
+            Bike Price
+          </span>
+          <strong>{money(bike.price)}</strong>
         </div>
 
         {/* Down Payment */}
@@ -322,6 +271,67 @@ export default function HeroBikeEMICalculator() {
           disabled={loading}
         />
 
+        {/* Discount Toggle - Below Down Payment */}
+        <div className="mb-4 p-3 border rounded-lg">
+          <div className="flex items-center justify-between gap-3">
+            <span className="font-medium text-gray-700">
+              Apply Discount?
+            </span>
+
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input
+                  type="radio"
+                  name="discount-toggle"
+                  checked={!showDiscount}
+                  onChange={() => handleDiscountToggle(false)}
+                  disabled={loading}
+                  className="accent-blue-600"
+                />
+                <span>No</span>
+              </label>
+
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input
+                  type="radio"
+                  name="discount-toggle"
+                  checked={showDiscount}
+                  onChange={() => handleDiscountToggle(true)}
+                  disabled={loading}
+                  className="accent-blue-600"
+                />
+                <span>Yes</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Only show the textbox when Yes is selected */}
+          {showDiscount && (
+            <div className="mt-3">
+              <label
+                htmlFor="discount-amount"
+                className="block mb-2 font-medium text-gray-700"
+              >
+                Discount Amount (₹)
+              </label>
+
+              <input
+                id="discount-amount"
+                type="text"
+                inputMode="numeric"
+                placeholder="Enter discount amount"
+                className="w-full border rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500"
+                value={discount}
+                onChange={(e) =>
+                  handleDiscountChange(e.target.value)
+                }
+                disabled={loading}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Validation Error */}
         {error && (
           <div
             role="alert"
@@ -340,10 +350,7 @@ export default function HeroBikeEMICalculator() {
         >
           {loading ? (
             <>
-              <Loader2
-                className="animate-spin"
-                size={18}
-              />
+              <Loader2 className="animate-spin" size={18} />
               Calculating...
             </>
           ) : (
@@ -356,7 +363,7 @@ export default function HeroBikeEMICalculator() {
           <div className="mt-6 bg-blue-50 p-4 rounded-xl text-left">
             <div className="flex items-center justify-between gap-3 mb-3">
               <p className="text-gray-700 font-medium">
-                Loan Amount
+                Loan Amount:
               </p>
 
               <div className="flex items-center gap-2">
