@@ -289,7 +289,7 @@ export default function HeroBikeEMICalculator() {
           <span className="text-gray-700 font-medium">
             Bike Price
           </span>
-          <strong>{money(bike.price)}</strong>
+        
         </div>
 
         {/* Down Payment */}
