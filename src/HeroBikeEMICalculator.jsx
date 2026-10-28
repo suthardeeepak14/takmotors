@@ -444,7 +444,7 @@ export default function HeroBikeEMICalculator() {
             </p>
 
             <p className="text-gray-700 mb-1">
-              <strong>Original Price:</strong>{" "}
+              <strong>Original:</strong>{" "}
               {money(calculatedOriginalPrice)}
             </p>
 
